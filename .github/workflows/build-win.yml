@@ -1,0 +1,47 @@
+name: build-win
+
+# 在 GitHub 的 Windows 机器上打 NSIS 安装包
+# 触发：Actions → build-win → Run workflow，或打 v* 标签
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  win:
+    runs-on: windows-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 安装依赖
+        run: npm install --no-audit --no-fund
+
+      - name: 打包 exe
+        # --publish never：环境里有 GITHUB_REPOSITORY 时 electron-builder 会去要 GH_TOKEN
+        run: npx electron-builder --win --x64 --publish never
+
+      - name: 列出产物
+        run: dir dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: shiyue-win
+          if-no-files-found: error
+          retention-days: 30
+          path: dist/*.exe
+
+      - name: 发 Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: false
+          generate_release_notes: true
+          files: |
+            dist/*.exe
