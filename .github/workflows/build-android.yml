@@ -25,7 +25,12 @@ jobs:
           distribution: temurin
           java-version: '17'          # Capacitor 6 / AGP 8 要求 17
 
-      - uses: android-actions/setup-android@v3
+      # 不用 android-actions/setup-android：它会去装早已废弃的 "tools" 包然后失败。
+      # ubuntu-latest 镜像自带 SDK，直接用。
+      - name: 确认 SDK
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          ls "$ANDROID_HOME/platforms" "$ANDROID_HOME/build-tools"
 
       - name: 安装依赖
         run: npm install --no-audit --no-fund
@@ -51,6 +56,7 @@ jobs:
         # debug 包自带调试签名，能直接装在平板上（系统会提示「未知来源」）
         run: |
           cd android
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon --stacktrace
 
