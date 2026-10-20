@@ -3,6 +3,9 @@ name: build-mac
 # 在 GitHub 的 macOS 机器上打出 dmg / zip，不需要本机有 Mac
 # 触发方式：仓库页面 Actions → build-mac → Run workflow，或打一个 v* 标签
 
+permissions:
+  contents: write        # 打标签时要建 Release 并上传产物
+
 on:
   workflow_dispatch:
   push:

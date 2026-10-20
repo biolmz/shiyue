@@ -3,6 +3,9 @@ name: build-android
 # 在 GitHub 的 Ubuntu 机器上打 APK（本机不需要装 Android SDK）
 # 触发：Actions → build-android → Run workflow，或打 v* 标签
 
+permissions:
+  contents: write        # 打标签时要建 Release 并上传产物
+
 on:
   workflow_dispatch:
   push:
