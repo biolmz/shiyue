@@ -43,7 +43,7 @@
         }
       ],
       "icon": "electron/icon.ico",
-      "artifactName": "拾阅-Setup-${version}.${ext}"
+      "artifactName": "shiyue-Setup-${version}.${ext}"
     },
     "nsis": {
       "oneClick": false,
@@ -61,7 +61,7 @@
       "icon": "electron/icon.icns",
       "identity": null,
       "darkModeSupport": false,
-      "artifactName": "拾阅-${version}-${arch}.${ext}",
+      "artifactName": "shiyue-${version}-${arch}.${ext}",
       "target": [
         {
           "target": "dmg",
