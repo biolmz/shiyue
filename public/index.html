@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>拾阅</title>
 <link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/mobile/touch.css">
 </head>
 <body>
 
@@ -296,6 +297,10 @@
 <div class="toast" id="toast"></div>
 
 <script src="/pdfview.js"></script>
+<!-- Android 版：把本地 HTTP 服务换成同接口的 IndexedDB 实现。
+     桌面/网页里这两个文件什么也不做，api() 照旧走 fetch。 -->
+<script src="/mobile/extract.js"></script>
+<script src="/mobile/boot.js"></script>
 <script src="/app.js"></script>
 </body>
 </html>

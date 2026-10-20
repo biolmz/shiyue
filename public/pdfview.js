@@ -47,13 +47,17 @@
     S.wrap = wrapEl;
     S.wrap.innerHTML = '<div class="pdf-loading"><div class="spinner"></div><span>正在解析 PDF…</span></div>';
 
-    const doc = await lib.getDocument({
-      url,
+    // Android 版没有 HTTP 服务，直接递字节（Uint8Array），省掉 blob URL 的来回
+    const source = (url && url.constructor === Uint8Array)
+      ? { data: url }
+      : { url };
+
+    const doc = await lib.getDocument(Object.assign(source, {
       cMapUrl: VENDOR + 'cmaps/',
       cMapPacked: true,
       standardFontDataUrl: VENDOR + 'standard_fonts/',
       enableXfa: true,
-    }).promise;
+    })).promise;
 
     if (myToken !== S.token) return null;
     S.doc = doc;

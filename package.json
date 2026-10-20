@@ -90,7 +90,7 @@
       }
     },
     "dmg": {
-      "title": "拾阅 ${version}",
+      "title": "拾阅 ${version} ${arch}",
       "window": {
         "width": 560,
         "height": 380
@@ -111,7 +111,15 @@
     }
   },
   "devDependencies": {
+    "@capacitor/cli": "^6.2.2",
     "electron": "^33.4.11",
     "electron-builder": "^25.1.8"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.2.2",
+    "@capacitor/clipboard": "^6.0.3",
+    "@capacitor/core": "^6.2.2",
+    "@capacitor/filesystem": "^6.0.4",
+    "@capacitor/share": "^6.0.4"
   }
 }

@@ -4,7 +4,9 @@
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
 
-const api = async (url, method, body) => {
+/* 后端接入点：桌面/网页走本地 HTTP 服务，Android 版换成 mobile/boot.js
+   注册的本地实现（同一套路由、同一套返回结构） */
+const api = window.SHIYUE_API || (async (url, method, body) => {
   const opt = { method: method || 'GET', headers: {} };
   if (body) {
     opt.headers['Content-Type'] = 'application/json';
@@ -15,7 +17,7 @@ const api = async (url, method, body) => {
   const data = ct.includes('json') ? await res.json() : await res.text();
   if (!res.ok) throw new Error((data && data.error) || '请求失败');
   return data;
-};
+});
 
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -853,7 +855,10 @@ $('#btnFit').addEventListener('click', () => {
 $('#btnStar').addEventListener('click', () => { if (S.sel) patchItem({ starred: !S.sel.starred }); });
 $('#btnExport').addEventListener('click', () => {
   const id = (S.cur && S.cur.id) || (S.sel && S.sel.id);
-  if (id) window.open('/api/item/' + id + '/export', '_blank');
+  if (id) {
+    if (window.SHIYUE_EXPORT) { window.SHIYUE_EXPORT('markdown', id).catch((e) => toast(e.message, true)); return; }
+    window.open('/api/item/' + id + '/export', '_blank');
+  }
 });
 $('#btnDelete').addEventListener('click', async () => {
   const it = S.cur || S.sel;
@@ -998,6 +1003,11 @@ async function uploadFiles(files) {
   const ids = [];
   for (const f of pdfs) {
     try {
+      if (window.SHIYUE_UPLOAD) {
+        const j = await window.SHIYUE_UPLOAD(f);
+        ids.push(j.item.id);
+        continue;
+      }
       const res = await fetch('/api/upload?name=' + encodeURIComponent(f.name), { method: 'POST', body: f });
       const j = await res.json();
       if (!res.ok) { toast((j && j.error) || ('导入失败：' + f.name), true); continue; }
@@ -1116,6 +1126,10 @@ $('#dataMask').addEventListener('click', (e) => { if (e.target.id === 'dataMask'
 
 $('#btnBib').addEventListener('click', () => {
   if (!S.items.length) return toast('文库还是空的', true);
+  if (window.SHIYUE_EXPORT) {
+    window.SHIYUE_EXPORT('bibtex').then(() => toast('BibTeX 已保存')).catch((e) => toast(e.message, true));
+    return;
+  }
   window.open('/api/export/bibtex', '_blank');
   toast('已导出 BibTeX，可直接拖进 Zotero');
 });

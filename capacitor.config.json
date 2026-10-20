@@ -1,0 +1,13 @@
+{
+  "appId": "cn.local.shiyue",
+  "appName": "拾阅",
+  "webDir": "public",
+  "android": {
+    "allowMixedContent": true,
+    "webContentsDebuggingEnabled": true,
+    "backgroundColor": "#F3F1EB"
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}

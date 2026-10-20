@@ -223,3 +223,23 @@ const kb = (n) => (n / 1024).toFixed(1) + 'KB';
 console.log('icon.ico   ' + kb(fs.statSync(path.join(OUT, 'icon.ico')).size) + '  ' + SIZES.filter((s) => s <= 256).join('/'));
 console.log('icon.icns  ' + kb(fs.statSync(path.join(OUT, 'icon.icns')).size) + '  ' + SIZES.join('/'));
 console.log('icon.png   ' + kb(fs.statSync(path.join(OUT, 'icon.png')).size) + '  512');
+
+/* ---------------- Android 启动图标 ----------------
+ * 五档密度，每档三种名字：
+ *   ic_launcher.png          普通图标
+ *   ic_launcher_round.png    圆形图标（部分桌面用）
+ *   ic_launcher_foreground.png 自适应图标的前景层（留白更多）
+ * 产物放 android-res/，由 CI 在 cap add android 之后覆盖进 res/。
+ */
+const AND_DIR = path.join(__dirname, '..', 'android-res');
+const DENSITY = { mdpi: 48, hdpi: 72, xhdpi: 96, xxhdpi: 144, xxxhdpi: 192 };
+for (const [name, size] of Object.entries(DENSITY)) {
+  const dir = path.join(AND_DIR, 'mipmap-' + name);
+  fs.mkdirSync(dir, { recursive: true });
+  const plain = frame(size, 0.06);
+  fs.writeFileSync(path.join(dir, 'ic_launcher.png'), plain);
+  fs.writeFileSync(path.join(dir, 'ic_launcher_round.png'), plain);
+  fs.writeFileSync(path.join(dir, 'ic_launcher_foreground.png'), frame(size, 0.18));
+}
+console.log('android    5 档密度 → android-res/');
+

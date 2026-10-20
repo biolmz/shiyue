@@ -1,0 +1,65 @@
+/* 拾阅 · 触屏适配（Android 平板为主）
+ *
+ * 桌面版的三栏在平板横屏下装得下，但要改三件事：
+ *   1) 手指比鼠标粗，行高、按钮、勾选区一律放大到 40px 以上
+ *   2) 没有 hover，鼠标态的浅色反馈会「粘」在最后一个点过的地方
+ *   3) 手势条 / 刘海要留安全区
+ * 竖屏手机上把左侧分类栏收起，只留列表 + 详情。
+ */
+
+/* 触屏设备统一：去掉双击缩放带来的 300ms 延迟和误触 */
+html {
+  -webkit-text-size-adjust: 100%;
+  touch-action: manipulation;
+}
+
+body {
+  /* 刘海屏 / 手势条 */
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
+  overscroll-behavior: none;
+}
+
+/* 输入类控件在 Android 上小于 16px 会被强制放大 */
+input, textarea, select {
+  font-size: max(15px, 1em);
+}
+
+/* 行高与点击区 */
+.tnode { height: 38px; font-size: 13.5px; }
+.col-h { font-size: 11px; }
+.taglist .tg { font-size: 12px; padding: 5px 10px; }
+.col-foot button { font-size: 11.5px; padding: 9px 0; }
+.btn-primary, .btn-ghost { min-height: 38px; padding-left: 16px; padding-right: 16px; }
+
+/* 条目列表：单行高度放大，勾选区加宽方便点 */
+.items-head, .item-row, .item {
+  grid-template-columns: 46px 1fr 86px 44px;
+}
+
+/* 触屏没有 hover，把鼠标态清掉，避免停留在上次点过的元素上 */
+@media (hover: none) {
+  .tnode:hover,
+  .col-foot button:hover,
+  .taglist .tg:hover,
+  .item:hover,
+  .btn-ghost:hover,
+  .btn-primary:hover { background: inherit; }
+  .tnode.active:hover { background: var(--brand); }
+}
+
+/* 平板竖屏 / 手机：左侧分类栏收起，宽度让给正文 */
+@media (max-width: 900px) {
+  .collections { display: none; }
+  .lib-body { min-height: 0; }
+  .rd-side { display: none; }
+}
+
+/* 窄屏下的弹窗与工具条 */
+@media (max-width: 620px) {
+  .modal { width: calc(100vw - 24px); max-width: none; padding: 16px; }
+  .modal-foot { flex-wrap: wrap; gap: 8px; }
+  .modal-foot button { flex: 1 1 auto; }
+  .rd-toolbar { flex-wrap: wrap; row-gap: 6px; }
+}
