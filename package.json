@@ -1,0 +1,117 @@
+{
+  "name": "shiyue",
+  "version": "1.2.0",
+  "description": "拾阅 · 本地文献阅读器",
+  "main": "electron/main.js",
+  "author": "Kael",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "app": "electron .",
+    "icon": "node tools/make-icon.js",
+    "zip:mac": "node tools/make-zip.js",
+    "dist": "electron-builder --win --x64",
+    "dist:win": "electron-builder --win --x64",
+    "dist:mac": "electron-builder --mac"
+  },
+  "build": {
+    "appId": "cn.local.shiyue",
+    "productName": "拾阅",
+    "copyright": "拾阅 · 本地文献阅读器",
+    "directories": {
+      "output": "dist",
+      "buildResources": "electron"
+    },
+    "files": [
+      "electron/**/*",
+      "lib/**/*",
+      "public/**/*",
+      "server.js",
+      "package.json",
+      "!**/node_modules/**/*"
+    ],
+    "afterPack": "tools/after-pack-mac.js",
+    "asar": true,
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "electron/icon.ico",
+      "artifactName": "拾阅-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "拾阅",
+      "installerIcon": "electron/icon.ico",
+      "uninstallerIcon": "electron/icon.ico",
+      "deleteAppDataOnUninstall": false
+    },
+    "mac": {
+      "category": "public.app-category.productivity",
+      "icon": "electron/icon.icns",
+      "identity": null,
+      "darkModeSupport": false,
+      "artifactName": "拾阅-${version}-${arch}.${ext}",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ],
+      "extendInfo": {
+        "CFBundleName": "拾阅",
+        "CFBundleDisplayName": "拾阅",
+        "CFBundleLocalizations": [
+          "zh_CN"
+        ],
+        "NSHumanReadableCopyright": "拾阅 · 本地文献阅读器",
+        "LSMinimumSystemVersion": "10.15.0",
+        "NSHighResolutionCapable": true
+      }
+    },
+    "dmg": {
+      "title": "拾阅 ${version}",
+      "window": {
+        "width": 560,
+        "height": 380
+      },
+      "contents": [
+        {
+          "x": 150,
+          "y": 200,
+          "type": "file"
+        },
+        {
+          "x": 410,
+          "y": 200,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    }
+  },
+  "devDependencies": {
+    "electron": "^33.4.11",
+    "electron-builder": "^25.1.8"
+  }
+}

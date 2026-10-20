@@ -1,0 +1,13 @@
+# 脚本必须保持 LF：从 Windows 提交、到 Mac 上运行，CRLF 会让 #!/bin/bash 失效
+*.command text eol=lf
+*.sh      text eol=lf
+
+# 二进制资源不要做换行转换
+*.ico  binary
+*.icns binary
+*.png  binary
+*.pfx  binary
+*.pfb  binary
+*.ttf  binary
+*.bcmap binary
+*.mjs  text

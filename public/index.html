@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>拾阅</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<!-- ══════════════ 文库（三栏） ══════════════ -->
+<div class="lib" id="lib">
+
+  <header class="lib-top">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H19v15.5H6.5A2.5 2.5 0 0 0 4 21V5.5Z"/>
+          <path d="M4 18.5A2.5 2.5 0 0 1 6.5 16H19"/>
+        </svg>
+      </div>
+      <div class="brand-text"><b>拾阅</b><span id="brandSub">文献与长文</span></div>
+    </div>
+
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="search" type="text" placeholder="搜索标题、作者、来源、笔记…" autocomplete="off">
+      <button class="search-clear" id="searchClear" hidden></button>
+    </div>
+
+    <button class="btn-add" id="btnImport" title="粘贴链接 / 上传 PDF（Ctrl+N）">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      添加
+    </button>
+    <button class="btn-add ghost" id="btnUpload" title="上传本地 PDF">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+    </button>
+    <input type="file" id="fileInput" accept="application/pdf,.pdf" multiple hidden>
+  </header>
+
+  <div class="lib-body">
+
+    <!-- 左：分类 -->
+    <aside class="collections">
+      <div class="col-h">我的文库</div>
+      <nav class="tree" id="filters">
+        <button class="tnode active" data-f="all">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 5h16v14H4z"/><path d="M4 9h16"/></svg>
+          <span>全部条目</span><i>0</i>
+        </button>
+        <button class="tnode" data-f="unread">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>
+          <span>未读</span><i>0</i>
+        </button>
+        <button class="tnode" data-f="star">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="m12 3 2.6 5.6 6.1.8-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L3.3 9.4l6.1-.8z"/></svg>
+          <span>星标</span><i>0</i>
+        </button>
+        <button class="tnode" data-f="marked">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14v16l-7-4-7 4z"/></svg>
+          <span>有批注</span><i>0</i>
+        </button>
+        <div class="col-h sub">按类型</div>
+        <button class="tnode" data-f="wechat">
+          <span class="tdot" style="background:#3E7A4A"></span><span>公众号</span><i>0</i>
+        </button>
+        <button class="tnode" data-f="paper">
+          <span class="tdot" style="background:#40628F"></span><span>论文 / PDF</span><i>0</i>
+        </button>
+        <button class="tnode" data-f="web">
+          <span class="tdot" style="background:#8A8272"></span><span>网页</span><i>0</i>
+        </button>
+      </nav>
+
+      <div class="col-h sub">标签</div>
+      <div class="taglist" id="tagList"></div>
+
+      <div class="col-foot">
+        <button id="btnBib" title="导出整库 BibTeX，可直接导入 Zotero">BibTeX</button>
+        <button id="btnData" title="数据目录">数据</button>
+      </div>
+    </aside>
+
+    <!-- 中：条目列表 -->
+    <main class="items-col">
+      <div class="items-head">
+        <span class="th-type">类型</span>
+        <span class="th-title" id="thTitle">标题</span>
+        <span class="th-author">作者</span>
+        <span class="th-date" id="thDate">日期</span>
+      </div>
+      <div class="items-scroll" id="itemsScroll">
+        <div id="itemList"></div>
+        <div class="empty-list" id="empty">
+          <div class="empty-art">
+          <svg viewBox="0 0 120 120" width="104" height="104" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="18" y="14" width="58" height="86" rx="3"/>
+            <path d="M30 32h34M30 44h34M30 56h22M30 68h28"/>
+            <path d="M52 76h44a4 4 0 0 1 4 4v18a4 4 0 0 1-4 4H52z" fill="currentColor" fill-opacity=".06"/>
+            <path d="M100 80v22"/>
+          </svg>
+          </div>
+          <h3>把想留下的文章，收进来慢慢读</h3>
+          <p>粘贴公众号 / 论文链接，或者直接拖入 PDF 文件。<br>抓成干净正文后，可以划线、写批注。</p>
+          <div class="empty-btns">
+            <button class="btn-primary" id="emptyAdd">粘贴链接</button>
+            <button class="btn-ghost" id="emptyUpload">上传 PDF</button>
+          </div>
+          <div class="empty-tips">
+            <code>mp.weixin.qq.com/s/…</code>
+            <code>arxiv.org/abs/…</code>
+            <code>doi.org/10.…</code>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- 右：详情 -->
+    <aside class="details" id="details">
+      <div class="det-empty" id="detEmpty">
+        <p>选中左边的条目<br>查看详情</p>
+      </div>
+      <div class="det-body" id="detBody" hidden>
+        <span class="det-type" id="detType"></span>
+        <h2 id="docTitle"></h2>
+        <div class="doc-meta" id="docMeta"></div>
+
+        <div class="det-actions">
+          <button class="btn-primary sm" id="btnOpen">打开阅读</button>
+          <button class="icon-btn" id="btnStar" title="星标">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="m12 3 2.6 5.6 6.1.8-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L3.3 9.4l6.1-.8z"/></svg>
+          </button>
+          <button class="icon-btn" id="btnExport" title="导出 Markdown">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 11l4 4 4-4"/><path d="M4 19h16"/></svg>
+          </button>
+          <button class="icon-btn danger" id="btnDelete" title="删除">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>
+          </button>
+        </div>
+
+        <div class="det-sec">
+          <div class="det-h">标签</div>
+          <div class="doc-tags" id="docTags"></div>
+        </div>
+
+        <div class="det-sec">
+          <div class="det-h">摘要</div>
+          <div class="det-desc" id="detDesc">—</div>
+        </div>
+
+        <div class="det-sec">
+          <div class="det-h">我的笔记 <span class="det-hint">自动保存</span></div>
+          <textarea id="detNote" class="det-note" placeholder="这篇和我的课题有什么关系？要追哪些文献？"></textarea>
+        </div>
+
+        <div class="det-sec">
+          <div class="det-h">划线 <span class="det-hint" id="detAnnoCount"></span></div>
+          <div class="det-annos" id="detAnnos"></div>
+        </div>
+
+        <div class="det-sec">
+          <a id="docOrigin" target="_blank" rel="noreferrer" class="det-link">打开原文 ↗</a>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <footer class="lib-foot">
+    <span id="statLine">—</span>
+    <span class="foot-hint" id="footHint">双击条目打开阅读器 · Ctrl+V 粘贴链接 · 拖入 PDF 直接导入</span>
+  </footer>
+</div>
+
+<!-- ══════════════ 阅读器（全屏） ══════════════ -->
+<div class="reader-view" id="readerView" hidden>
+  <header class="rd-head">
+    <button class="rd-back" id="btnBack">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6 9 12l6 6"/></svg>
+      文库
+    </button>
+    <div class="rd-title" id="rdTitle"></div>
+    <div class="rd-tools">
+      <div class="seg" id="segFont" title="字体">
+        <button data-font="serif" class="on">宋</button>
+        <button data-font="sans">黑</button>
+      </div>
+      <div class="seg" id="segZoom">
+        <button id="fontMinus" title="缩小">−</button>
+        <button id="zoomVal" class="val">100%</button>
+        <button id="fontPlus" title="放大">+</button>
+      </div>
+      <div class="seg" id="segWidth" title="版心宽度（仅文章）">
+        <button data-width="640">窄</button>
+        <button data-width="720" class="on">中</button>
+        <button data-width="860">宽</button>
+      </div>
+      <button class="tb-btn" id="btnTheme" title="背景">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3v18"/></svg>
+      </button>
+      <button class="tb-btn" id="btnFit" title="适合宽度 / 单页切回文字">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 9V5h4M20 9V5h-4M4 15v4h4M20 15v4h-4"/></svg>
+      </button>
+      <button class="tb-btn on" id="btnSide" title="批注面板">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="rd-body">
+    <aside class="rd-nav" id="rdNav">
+      <div class="rd-nav-h">
+        <span id="rdNavTitle">页面</span>
+        <button id="navSwitch" hidden>摘要</button>
+      </div>
+      <div class="rd-nav-body" id="rdNavBody"></div>
+    </aside>
+
+    <main class="rd-main" id="rdMain">
+      <div class="pdf-wrap" id="pdfWrap" hidden></div>
+      <div class="doc-scroll" id="docScroll">
+        <div class="doc" id="docInner">
+          <div class="doc-body" id="docBody"></div>
+          <div class="doc-foot">
+            <span id="docFootLine"></span>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <aside class="rd-side" id="rdSide">
+      <div class="rd-side-head">
+        <button class="rd-tab active" data-tab="annos">批注 <i id="annoCount">0</i></button>
+        <button class="rd-tab" data-tab="note">笔记本</button>
+      </div>
+      <div class="rd-side-body">
+        <div class="rd-pane active" id="paneAnnos">
+          <div class="anno-list" id="annoList"></div>
+          <div class="anno-empty" id="annoEmpty"></div>
+        </div>
+        <div class="rd-pane" id="paneNote">
+          <textarea id="docNote" class="note-area" placeholder="整篇的想法、要追的文献、和自己课题的关系…"></textarea>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- 选中文字后的浮动工具条 -->
+<div class="selbar" id="selbar" hidden>
+  <button class="dot" data-color="yellow" title="重点"></button>
+  <button class="dot" data-color="green" title="方法 / 数据"></button>
+  <button class="dot" data-color="blue" title="结论"></button>
+  <button class="dot" data-color="pink" title="存疑"></button>
+  <span class="sel-divider"></span>
+  <button class="sel-act" id="selCopy" title="复制">
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>
+  </button>
+</div>
+
+<!-- 导入弹窗 -->
+<div class="modal-mask" id="modalMask" hidden>
+  <div class="modal">
+    <h3>添加链接</h3>
+    <p class="modal-sub">支持公众号文章、网页、arXiv、DOI、PDF 直链。一行一个，最多 6 条。<br>本地 PDF 可以直接拖进窗口，或用「上传」按钮。</p>
+    <textarea id="urlInput" placeholder="https://mp.weixin.qq.com/s/xxxxxxxx&#10;https://arxiv.org/abs/2401.00001"></textarea>
+    <div class="modal-err" id="modalErr" hidden></div>
+    <div class="modal-foot">
+      <button class="btn-ghost" id="modalCancel">取消</button>
+      <button class="btn-primary" id="modalOk">开始抓取</button>
+    </div>
+  </div>
+</div>
+
+<!-- 数据目录 -->
+<div class="modal-mask" id="dataMask" hidden>
+  <div class="modal small">
+    <h3>数据都在本地</h3>
+    <p class="modal-sub">正文、批注、PDF、配图全存在这个文件夹，不经过任何服务器：</p>
+    <code class="path-box" id="dataPath"></code>
+    <div class="modal-foot">
+      <button class="btn-ghost" id="dataOpen">打开文件夹</button>
+      <button class="btn-primary" id="dataOk">知道了</button>
+    </div>
+  </div>
+</div>
+
+<div class="drop-veil" id="dropVeil" hidden>
+  <div class="drop-box">
+    <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+    <b>松手导入 PDF</b>
+    <span>文件会复制到本地文库</span>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="/pdfview.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>
