@@ -11,16 +11,20 @@ PDF 直接拖进来就能读，**文字层可以划高亮**，批注按页记，
 
 ## 安装
 
+三个平台的安装包都在 [Releases](https://github.com/biolmz/shiyue/releases) 里，
+按自己的机器选。文件名是 ASCII（`shiyue-…`），因为 GitHub 会把资产名里的中文剥掉。
+
 ### Windows
 
-运行 **`拾阅-Setup-1.2.0.exe`**，装完桌面和开始菜单都有「拾阅」。
+运行 **`shiyue-Setup-1.2.1.exe`**，装完桌面和开始菜单都有「拾阅」。
+装在用户目录，不需要管理员权限；卸载不会删文库。
 
 ### macOS
 
 | 机器 | 装哪个 |
 |---|---|
-| Apple Silicon（M1/M2/M3/M4…） | **`拾阅-1.2.0-arm64.dmg`** |
-| Intel 芯片 | **`拾阅-1.2.0-x64.dmg`** |
+| Apple Silicon（M1/M2/M3/M4…） | **`shiyue-1.2.1-arm64.dmg`** |
+| Intel 芯片 | **`shiyue-1.2.1-x64.dmg`** |
 
 打开 dmg，把「拾阅」拖进 Applications 就行。
 
@@ -28,42 +32,62 @@ PDF 直接拖进来就能读，**文字层可以划高亮**，批注按页记，
 > 在「拾阅」上**右键 → 打开 → 再点「打开」**，之后就不会再问了。
 > 如果提示「已损坏，无法打开」，在终端跑一句 `xattr -dr com.apple.quarantine /Applications/拾阅.app`。
 
-两边都不用装 Node.js，不联网也能用（只有抓取内容时需要网络）。卸载时文库不会被删，重装还认得。
+### Android 平板
+
+装 **`shiyue-1.2.1-android.apk`**，Android 7.0 以上。文件管理器里点开就能装，
+系统会问「是否安装未知来源应用」——允许一次即可。
+
+平板横屏是左边分类、中间列表、右边详情的三栏；竖屏和手机会把分类栏收起来。
+
+> APK 里没有 Node，后端换成了 `public/mobile/boot.js`：
+> 同样的路由名与返回结构，实现是 IndexedDB + CapacitorHttp。
+> 数据全在设备本机，**卸载应用会连文库一起删掉**，重要内容先导出 Markdown。
+
+两边桌面版都不用装 Node.js，不联网也能用（只有抓取内容时需要网络）。
+卸载时文库不会被删，重装还认得。
 
 ---
 
-## 没有 Mac，怎么拿到 dmg
+## 重新打包
 
-`.dmg` 里的文件系统要靠 macOS 的 `hdiutil`，签名要靠 `codesign`，**这两样只有 macOS 才有**。
-所以在 Windows 上做不出能用的 mac 包（硬拼出来的 app 在 Apple Silicon 上会因签名失效直接被杀掉）。
-两条路：
+### 打 mac 包
 
-### 路一：找一台 Mac，双击打包（最省事，约 3 分钟）
+`.dmg` 要靠 macOS 的 `hdiutil` 和 `codesign`，所以只能在 Mac 或云 Mac 上打。
 
-把 **`拾阅-1.2.0-mac源码包.zip`** 拷到 Mac 上，解压，双击 **`打包-mac.command`**。
-它会自动装依赖（走国内镜像）并打出：
-
-```
-dist/拾阅-1.2.0-arm64.dmg     ← M1/M2/M3/M4
-dist/拾阅-1.2.0-x64.dmg       ← Intel
-```
-
-> 第一次双击若提示「权限不足」，在终端执行 `chmod +x 打包-mac.command`。
-> 只是想用、不想要安装包？双击 **`启动.command`**，浏览器打开就能用。
-
-### 路二：让 GitHub 的 macOS 机器帮你打
-
-仓库里带了 `.github/workflows/build-mac.yml`。推到 GitHub 后：
+本机是 Mac：双击 **`打包-mac.command`**，或
 
 ```bash
-git init && git add -A && git commit -m "拾阅"
-gh repo create shiyue --private --source=. --push
-gh workflow run build-mac
-gh run watch            # 约 3-5 分钟
+npm install
+npm run dist:mac        # → dist/shiyue-<版本>-{arm64,x64}.dmg
 ```
 
-跑完后在 Actions 页面下载 `shiyue-mac` 这个 artifact，里面就是两个 dmg。
-也可以打个 `v1.2.0` 标签自动触发。
+没有 Mac：让 GitHub Actions 代劳。推一个 `v*` 标签即可，
+`.github/workflows/build-mac.yml` 会在 `macos-14` 上跑完并把 dmg 挂到 Release。
+
+### 打 APK
+
+```bash
+npm install
+node tools/make-mobile-extract.js   # lib/extract.js → public/mobile/extract.js
+npx cap add android                 # 生成原生工程（不入库）
+npx cap sync android
+cd android && ./gradlew assembleDebug
+```
+
+需要 JDK 17 和 Android SDK（`local.properties` 里写 `sdk.dir=`）。
+CI 上由 `.github/workflows/build-android.yml` 全自动做，产物是 debug 签名的 APK。
+
+### 打 Windows 包
+
+```bash
+npm run dist:win        # → dist/shiyue-Setup-<版本>.exe
+```
+
+CI 上由 `.github/workflows/build-win.yml` 做。
+
+> 三个工作流都带 `--publish never`：环境里存在 `GITHUB_REPOSITORY` 时
+> electron-builder 会误以为要发 Release 并索要 `GH_TOKEN`。
+> 发 Release 另走 `softprops/action-gh-release`，需要 `permissions: contents: write`。
 
 ## 不想装？直接跑源码
 
