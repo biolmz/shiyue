@@ -8,7 +8,7 @@
  *   - macOS 菜单第一项必须是应用菜单（关于/服务/隐藏/退出），Windows 放「文件」里
  *   - 开发态 Dock 图标要手动设，打包后由 .icns 接管
  */
-const { app, BrowserWindow, Menu, shell, dialog, screen } = require('electron');
+const { app, BrowserWindow, Menu, shell, dialog, screen, clipboard, ipcMain } = require('electron');
 const path = require('path');
 
 const IS_MAC = process.platform === 'darwin';
@@ -54,6 +54,7 @@ function createWindow(port) {
     // macOS 用系统红绿灯；标题栏照常显示，不抢内容区
     titleBarStyle: IS_MAC ? 'default' : undefined,
     webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
       spellcheck: false,
@@ -83,6 +84,31 @@ function createWindow(port) {
     }
   });
 
+  // 右键菜单：键位失灵时的兜底。macOS 上 Cmd+C/V 归应用菜单管，
+  // 菜单一旦没被系统接管键就哑了，右键这条路始终在。
+  win.webContents.on('context-menu', (e, p) => {
+    const items = [];
+    if (p.linkURL) {
+      items.push({ label: '在浏览器中打开链接', click: () => shell.openExternal(p.linkURL) });
+      items.push({ label: '复制链接地址', click: () => clipboard.writeText(p.linkURL) });
+      items.push({ type: 'separator' });
+    }
+    if (p.isEditable) {
+      items.push({ role: 'cut', label: '剪切' });
+      items.push({ role: 'copy', label: '复制' });
+      items.push({ role: 'paste', label: '粘贴' });
+      items.push({ type: 'separator' });
+      items.push({ role: 'selectAll', label: '全选' });
+    } else if (p.selectionText) {
+      items.push({ role: 'copy', label: '复制' });
+      items.push({ type: 'separator' });
+      items.push({ role: 'selectAll', label: '全选' });
+    }
+    while (items.length && items[items.length - 1].type === 'separator') items.pop();
+    if (!items.length) return;
+    Menu.buildFromTemplate(items).popup({ window: win });
+  });
+
   win.on('closed', () => { win = null; });
 }
 
@@ -103,6 +129,10 @@ function showAbout() {
     buttons: ['好'],
   });
 }
+
+/* 剪贴板通道：页面拿它做「从剪贴板粘贴」，不依赖键盘事件 */
+ipcMain.handle('clip:read', () => clipboard.readText());
+ipcMain.handle('clip:write', (e, text) => clipboard.writeText(String(text == null ? '' : text)));
 
 function buildMenu() {
   const fileMenu = {

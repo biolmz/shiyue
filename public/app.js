@@ -634,8 +634,11 @@ $$('#selbar .dot').forEach((d) => d.addEventListener('click', () => createAnno(d
 
 $('#selCopy').addEventListener('click', async () => {
   if (!pendingSel) return;
-  try { await navigator.clipboard.writeText(pendingSel.text); toast('已复制'); }
-  catch (e) { toast('复制失败', true); }
+  try {
+    if (window.shiyue && window.shiyue.clipboard) await window.shiyue.clipboard.write(pendingSel.text);
+    else await navigator.clipboard.writeText(pendingSel.text);
+    toast('已复制');
+  } catch (e) { toast('复制失败', true); }
   hideSelbar();
 });
 
@@ -904,15 +907,54 @@ $('#searchClear').addEventListener('click', () => {
 function openModal() {
   $('#modalMask').hidden = false;
   $('#modalErr').hidden = true;
-  setTimeout(() => $('#urlInput').focus(), 60);
+  setTimeout(async () => {
+    const ta = $('#urlInput');
+    ta.focus();
+    // 剪贴板里正好是一条链接 → 直接填进去。
+    // macOS 上 Cmd+V 依赖应用菜单的 paste role，键位偶尔会哑，
+    // 所以不让用户去赌那个快捷键。
+    if (!ta.value.trim()) {
+      const txt = await readClip().catch(() => '');
+      const one = txt.trim();
+      if (/^https?:\/\/\S+$/i.test(one) && one.length < 2048) {
+        ta.value = one;
+        ta.select();
+      }
+    }
+  }, 60);
 }
 function closeModal() { $('#modalMask').hidden = true; $('#urlInput').value = ''; }
+
+/** 读系统剪贴板：桌面端走 preload，浏览器里退回 navigator.clipboard */
+async function readClip() {
+  if (window.shiyue && window.shiyue.clipboard) return window.shiyue.clipboard.read();
+  if (navigator.clipboard && navigator.clipboard.readText) return navigator.clipboard.readText();
+  return '';
+}
+
+/** 把剪贴板内容追加到输入框，一行一个，去重 */
+async function pasteFromClipboard() {
+  const ta = $('#urlInput');
+  let txt = '';
+  try {
+    txt = await readClip();
+  } catch (e) { /* 没有权限就当空 */ }
+  if (!txt.trim()) { toast('剪贴板里没有文字', true); return; }
+  const have = new Set(ta.value.split('\n').map((s) => s.trim()).filter(Boolean));
+  const add = txt.split('\n').map((s) => s.trim()).filter((s) => s && !have.has(s));
+  if (!add.length) { toast('剪贴板内容已经在里面了'); return; }
+  ta.value = [ta.value.trim(), ...add].filter(Boolean).join('\n');
+  ta.focus();
+  ta.setSelectionRange(ta.value.length, ta.value.length);
+  toast('已粘贴 ' + add.length + ' 条');
+}
 
 $('#btnImport').addEventListener('click', openModal);
 $('#emptyAdd').addEventListener('click', openModal);
 $('#modalCancel').addEventListener('click', closeModal);
 $('#modalMask').addEventListener('click', (e) => { if (e.target.id === 'modalMask') closeModal(); });
 $('#modalOk').addEventListener('click', doImport);
+$('#modalPaste').addEventListener('click', pasteFromClipboard);
 $('#urlInput').addEventListener('keydown', (e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) doImport(); });
 
 async function doImport() {
@@ -1011,6 +1053,8 @@ $('#docScroll').addEventListener('scroll', () => {
   if (!S.cur || max < 200) return;
   clearTimeout(progTimer);
   progTimer = setTimeout(() => {
+    // 1.2 秒里用户可能已经关掉条目，S.cur 会是 null
+    if (!S.cur) return;
     const pct = Math.round(p * 100);
     if (Math.abs(pct - (S.cur.progress || 0)) >= 8) {
       S.cur.progress = pct;

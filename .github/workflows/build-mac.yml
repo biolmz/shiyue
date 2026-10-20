@@ -43,3 +43,14 @@ jobs:
           path: |
             dist/*.dmg
             dist/*.zip
+
+      # 打标签时顺手建 Release，把 dmg 挂上去当下载地址：
+      # 比 artifact 强的地方是永久链接、不需要登录、支持断点续传
+      - name: 发 Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: false
+          generate_release_notes: true
+          files: |
+            dist/*.dmg

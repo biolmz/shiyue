@@ -1,6 +1,6 @@
 {
   "name": "shiyue",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "拾阅 · 本地文献阅读器",
   "main": "electron/main.js",
   "author": "Kael",
