@@ -125,6 +125,8 @@ section[id],[id="data"]{scroll-margin-top:78px}
 .pick .go{margin-left:auto;color:var(--brand);font-size:12px;font-weight:600;white-space:nowrap}
 .card-note{font-size:12px;color:var(--ink-3);margin-top:14px;line-height:1.7}
 .tip{font-size:12.5px;color:var(--ink-3);margin-top:6px}
+.mirror{display:block;margin-top:8px;font-size:12px;color:var(--ink-3);text-decoration:underline;text-underline-offset:2px}
+.mirror:hover{color:var(--brand)}
 .card-note code{
   font-family:var(--mono);font-size:11px;background:#F1EEE3;color:#6B6558;
   padding:1px 5px;border-radius:3px;
@@ -355,7 +357,7 @@ footer .sp{margin-left:auto;font-family:var(--mono);font-size:11.5px}
       <div class="sec-head">
         <h2>下载</h2>
         <p>Windows、macOS、Android 都有现成的安装包。macOS 分 Apple Silicon 和 Intel 两个版本，按机器选。</p>
-        <p class="tip">安装包托管在 GitHub Releases，国内直连可能偏慢或断开，必要时挂个代理再点。</p>
+        <p class="tip">安装包托管在 GitHub Releases。国内直连常被卡住，每个包下面都附了镜像下载链接，点不动就换镜像。</p>
       </div>
 
       <div class="dl-grid">
@@ -375,6 +377,7 @@ footer .sp{margin-left:auto;font-family:var(--mono);font-size:11.5px}
             </div>
             <span class="go">下载</span>
           </a>
+          <a class="mirror" href="https://ghfast.top/https://github.com/biolmz/shiyue/releases/download/v1.2.1/shiyue-Setup-1.2.1.exe" download>镜像下载 · 国内加速</a>
 
           <p class="card-note">
             装在用户目录，<b>不需要管理员权限</b>；可以自选安装位置，装完桌面和开始菜单都有「拾阅」。
@@ -406,6 +409,7 @@ footer .sp{margin-left:auto;font-family:var(--mono);font-size:11.5px}
             </div>
             <span class="go">下载</span>
           </a>
+          <a class="mirror" href="https://ghfast.top/https://github.com/biolmz/shiyue/releases/download/v1.2.1/shiyue-1.2.1-arm64.dmg" download>镜像下载 · 国内加速</a>
 
           <a class="pick" href="https://github.com/biolmz/shiyue/releases/download/v1.2.1/shiyue-1.2.1-x64.dmg" download data-dl="mac-x64">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1E4A3E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 20h16"/></svg>
@@ -415,6 +419,7 @@ footer .sp{margin-left:auto;font-family:var(--mono);font-size:11.5px}
             </div>
             <span class="go">下载</span>
           </a>
+          <a class="mirror" href="https://ghfast.top/https://github.com/biolmz/shiyue/releases/download/v1.2.1/shiyue-1.2.1-x64.dmg" download>镜像下载 · 国内加速</a>
 
           <p class="card-note">
             不确定自己的机器是哪种？左上角苹果菜单 → 关于本机，看「芯片」那一行：
@@ -452,6 +457,7 @@ footer .sp{margin-left:auto;font-family:var(--mono);font-size:11.5px}
             </div>
             <span class="go">下载</span>
           </a>
+          <a class="mirror" href="https://ghfast.top/https://github.com/biolmz/shiyue/releases/download/v1.2.1/shiyue-1.2.1-android.apk" download>镜像下载 · 国内加速</a>
 
           <p class="card-note">
             下载后在文件管理器里点开就能装。Android 会问「是否安装未知来源应用」，
